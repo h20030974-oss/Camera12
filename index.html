@@ -1,241 +1,227 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Aura System X | The Final Secret</title>
+    <title>Aura AI Noir | Final Masterpiece</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@700&family=Montserrat:wght@300;900&display=swap');
         
-        body { margin: 0; background: #000; overflow: hidden; font-family: 'JetBrains Mono', monospace; }
-        #video { position: absolute; width: 1px; height: 1px; opacity: 0; }
-        canvas { position: absolute; width: 100vw; height: 100vh; object-fit: cover; cursor: crosshair; }
+        body { margin: 0; background: #000; overflow: hidden; font-family: 'Montserrat', sans-serif; color: #fff; }
+        #video { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: cover; z-index: 1; filter: grayscale(1) brightness(0.8); }
+        canvas { display: none; } 
 
-        /* نظام الإقلاع البصري */
-        #boot-loader {
+        /* شاشة التشغيل الآمن */
+        #boot-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #000; z-index: 10000; display: flex;
             flex-direction: column; align-items: center; justify-content: center;
-            transition: 1s ease-in-out;
+            transition: opacity 1s;
         }
-        .core-btn {
-            padding: 25px 60px; background: none; color: #fff;
-            border: 1px solid #333; border-radius: 5px; font-weight: 800;
-            font-size: 14px; cursor: pointer; letter-spacing: 5px; transition: 0.4s;
+        #boot-btn {
+            padding: 22px 50px; background: #fff; color: #000;
+            border: none; border-radius: 5px; font-weight: 900;
+            font-size: 16px; cursor: pointer; letter-spacing: 5px;
+            box-shadow: 0 0 30px rgba(255,255,255,0.2);
         }
-        .core-btn:hover { background: #fff; color: #000; box-shadow: 0 0 50px #fff; border-color: #fff; }
 
-        /* واجهة التحكم العسكرية المخفية */
-        #ui {
-            position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%);
-            display: none; gap: 15px; z-index: 1000; align-items: center;
-            background: rgba(0,0,0,0.6); padding: 15px 30px; border-radius: 100px;
-            backdrop-filter: blur(25px); border: 1px solid rgba(255,255,255,0.05);
-            transition: 0.5s opacity;
-        }
-        button {
-            width: 45px; height: 45px; border-radius: 50%;
-            border: 1px solid rgba(255,255,255,0.1); background: none; 
-            color: #fff; font-size: 9px; cursor: pointer; transition: 0.3s;
-        }
-        button.active { background: #fff; color: #000; font-weight: 800; }
+        /* واجهة التصوير */
+        #ui { position: fixed; bottom: 50px; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; flex-direction: column; align-items: center; gap: 20px; }
         
         #shutter {
-            width: 70px; height: 70px; border: 4px solid #fff; border-radius: 50%;
-            position: relative; transition: 0.4s;
+            width: 85px; height: 85px; border-radius: 50%; border: 4px solid #fff;
+            background: none; position: relative; cursor: pointer; display: flex;
+            align-items: center; justify-content: center; transition: 0.4s;
         }
-        #shutter::after {
-            content: ''; position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%); width: 50px; height: 50px;
-            background: #ff003c; border-radius: 50%; transition: 0.3s;
-        }
-        #shutter.rec::after { width: 30px; height: 30px; border-radius: 8px; animation: pulse 1s infinite; }
+        #shutter-inner { width: 65px; height: 65px; background: #fff; border-radius: 50%; transition: 0.4s; }
+        #shutter.recording { border-color: #ff004c; }
+        #shutter.recording #shutter-inner { background: #ff004c; border-radius: 12px; transform: scale(0.6); animation: pulse 1s infinite; }
 
-        /* شريط المعلومات التكنولوجية */
-        #status-bar {
-            position: fixed; top: 25px; width: 100%; display: none;
-            justify-content: center; gap: 30px; color: #fff; font-size: 8px;
-            letter-spacing: 3px; z-index: 1000; opacity: 0.5;
+        /* شاشة الرندر بـ AI */
+        #ai-engine {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 20000; display: none;
+            flex-direction: column; align-items: center; justify-content: center;
         }
+        .progress-box { width: 280px; height: 2px; background: #111; margin-top: 30px; position: relative; }
+        .progress-bar { position: absolute; top:0; left:0; height:100%; width:0%; background: #fff; box-shadow: 0 0 20px #fff; }
 
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+        #timer { position: fixed; top: 50px; left: 50%; transform: translateX(-50%); font-family: 'Oswald'; font-size: 35px; color: #fff; display: none; z-index: 1000; }
+        .scanline { position: absolute; width: 100%; height: 2px; background: rgba(255,255,255,0.1); top: 0; animation: scan 3s linear infinite; }
+
+        @keyframes scan { 0% { top: 0; } 100% { top: 100%; } }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
 
-<!-- محرك المعالجة البصرية (SVG Hardware Neural Filters) -->
-<svg style="display:none;">
-    <filter id="aura-neural-sharp">
-        <feConvolveMatrix order="3" preserveAlpha="true" kernelMatrix="0 -1 0 -1 5 -1 0 -1 0"/>
-        <feColorMatrix type="matrix" values="1.05 0 0 0 0.01  0 1.05 0 0 0.01  0 0 1.1 0 0.02  0 0 0 1 0" />
-    </filter>
-</svg>
-
-<div id="boot-loader">
-    <div style="font-size: 10px; color: #444; margin-bottom: 20px; letter-spacing: 8px;">AURA SYSTEM X ONLINE</div>
-    <button class="core-btn" onclick="initializeSystem()">BOOT ENGINE</button>
+<div id="boot-screen">
+    <div style="font-size: 10px; letter-spacing: 10px; color: #444; margin-bottom: 25px;">AI RECONSTRUCTION SYSTEM</div>
+    <button id="boot-btn" onclick="startAura()">ACTIVATE CORE</button>
 </div>
 
-<div id="status-bar">
-    <span>48MP SENSOR ACTIVE</span>
-    <span id="fps-counter">FPS: 24.00</span>
-    <span style="color:#ffdf00">MASTER RAW</span>
+<div id="ai-engine">
+    <div class="scanline"></div>
+    <div style="font-family:'Oswald'; font-size: 28px; font-style: italic; letter-spacing: 5px;">AI RENDERING</div>
+    <div style="font-size: 9px; color: #555; margin-top: 10px; letter-spacing: 3px;" id="ai-task">PROCESSING NEURAL NOIR...</div>
+    <div class="progress-box"><div id="p-bar" class="progress-bar"></div></div>
+    <div id="p-text" style="font-size: 10px; margin-top: 15px; color: #fff;">0%</div>
 </div>
+
+<div id="timer">00:40</div>
 
 <video id="video" autoplay playsinline muted></video>
 <canvas id="canvas"></canvas>
 
 <div id="ui">
-    <button onclick="setEngineMode('MASTER', this)" class="active">MST</button>
-    <button onclick="setEngineMode('LOG', this)">LOG</button>
-    <div id="shutter" onclick="handleShutter()"></div>
-    <button onclick="toggleFlare(this)">FLR</button>
-    <button onclick="stealthMode()">HUD</button>
+    <div style="font-size: 9px; letter-spacing: 4px; color: #555; font-weight: 900;">1080P | RAW 24FPS | NOIR LENS</div>
+    <div id="shutter" onclick="toggleCapture()">
+        <div id="shutter-inner"></div>
+    </div>
 </div>
+
+<!-- محرك الفلاتر الرياضية المعقدة (يتم استدعاؤه عند الرندر فقط) -->
+<svg style="display:none;">
+    <filter id="ai-sharpen">
+        <feConvolveMatrix order="3" preserveAlpha="true" kernelMatrix="0 -1 0 -1 5 -1 0 -1 0"/>
+        <feColorMatrix type="matrix" values="1.5 0 0 0 -0.2  1.5 0 0 0 -0.2  1.5 0 0 0 -0.2  0 0 0 1 0" />
+    </filter>
+</svg>
 
 <script>
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true });
+    const ctx = canvas.getContext('2d', { alpha: false });
+    const pBar = document.getElementById('p-bar');
+    const pText = document.getElementById('p-text');
+    const aiEngine = document.getElementById('ai-engine');
+    const timerDisplay = document.getElementById('timer');
     
-    let engineMode = 'MASTER';
-    let flareActive = false;
     let mediaRecorder;
     let recordedChunks = [];
     let isRecording = false;
+    let timeLeft = 40;
+    let timerInterval;
 
-    async function initializeSystem() {
+    async function startAura() {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({
-                video: {
-                    facingMode: "environment",
-                    width: { ideal: 1920 },
-                    height: { ideal: 1080 },
-                    frameRate: { ideal: 24 }
-                },
-                audio: { echoCancellation: false, noiseSuppression: false }
+                video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } },
+                audio: true
             });
-            
             video.srcObject = stream;
-            video.onloadedmetadata = () => {
-                video.play();
-                document.getElementById('boot-loader').style.opacity = '0';
-                setTimeout(() => {
-                    document.getElementById('boot-loader').style.display = 'none';
-                    document.getElementById('ui').style.display = 'flex';
-                    document.getElementById('status-bar').style.display = 'flex';
-                    canvas.width = video.videoWidth;
-                    canvas.height = video.videoHeight;
-                    startAuraEngine();
-                }, 1000);
-            };
-        } catch (err) {
-            alert("SYSTEM ERROR: PLEASE GRANT CAMERA ACCESS");
-        }
+            document.getElementById('boot-screen').style.opacity = '0';
+            setTimeout(() => document.getElementById('boot-screen').style.display = 'none', 1000);
+        } catch (e) { alert("الكاميرا لا تعمل، يرجى تفعيل الصلاحيات."); }
     }
 
-    function setEngineMode(mode, btn) {
-        engineMode = mode;
-        document.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-    }
-
-    function toggleFlare(btn) {
-        flareActive = !flareActive;
-        btn.classList.toggle('active');
-    }
-
-    function stealthMode() {
-        const ui = document.getElementById('ui');
-        const bar = document.getElementById('status-bar');
-        const currentOp = ui.style.opacity || "1";
-        ui.style.opacity = currentOp === "1" ? "0" : "1";
-        bar.style.opacity = currentOp === "1" ? "0" : "0.5";
-    }
-
-    // السر: لمس وسط الشاشة مطولاً يعيد الواجهة
-    window.addEventListener('touchstart', (e) => {
-        if(e.touches.length === 1) {
-            this.timer = setTimeout(() => {
-                document.getElementById('ui').style.opacity = '1';
-                document.getElementById('status-bar').style.opacity = '0.5';
-            }, 1500);
-        }
-    });
-    window.addEventListener('touchend', () => clearTimeout(this.timer));
-
-    function startAuraEngine() {
-        // تطبيق الفلتر العصبي (Neural Filter)
-        if (engineMode === 'MASTER') {
-            ctx.filter = 'url(#aura-neural-sharp) contrast(1.1) brightness(0.98)';
-        } else if (engineMode === 'LOG') {
-            ctx.filter = 'contrast(0.7) saturate(0.8) brightness(1.1)';
-        } else {
-            ctx.filter = 'none';
-        }
-
-        // رسم الإطار الأساسي
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-        // إضافة تأثير الوهج الأزرق (Anamorphic Flare)
-        if (flareActive) {
-            ctx.globalCompositeOperation = 'screen';
-            const gradient = ctx.createLinearGradient(0, canvas.height / 2, canvas.width, canvas.height / 2);
-            gradient.addColorStop(0, 'rgba(0,0,0,0)');
-            gradient.addColorStop(0.5, 'rgba(0, 180, 255, 0.25)');
-            gradient.addColorStop(1, 'rgba(0,0,0,0)');
-            ctx.fillStyle = gradient;
-            const drift = Math.sin(Date.now() / 1000) * 5; // حركة خفيفة جداً
-            ctx.fillRect(0, (canvas.height / 2) + drift, canvas.width, 2.5);
-            ctx.globalCompositeOperation = 'source-over';
-        }
-
-        // قناع السينما الاحترافي
-        ctx.fillStyle = "black";
-        ctx.fillRect(0, 0, canvas.width, canvas.height * 0.12);
-        ctx.fillRect(0, canvas.height * 0.88, canvas.width, canvas.height * 0.12);
-
-        requestAnimationFrame(startAuraEngine);
-    }
-
-    function handleShutter() {
-        const shutter = document.getElementById('shutter');
-        if (!isRecording) {
-            startRecording();
-            shutter.classList.add('rec');
-            isRecording = true;
-        } else {
-            stopRecording();
-            shutter.classList.remove('rec');
-            isRecording = false;
-        }
+    function toggleCapture() {
+        if (!isRecording) startRecording();
+        else stopRecording();
     }
 
     function startRecording() {
         recordedChunks = [];
-        const stream = canvas.captureStream(24);
-        const audioTracks = video.srcObject.getAudioTracks();
-        if (audioTracks.length > 0) stream.addTrack(audioTracks[0]);
-
-        mediaRecorder = new MediaRecorder(stream, {
-            mimeType: 'video/webm;codecs=vp9',
-            videoBitsPerSecond: 20000000 // 20 ميجا بايت في الثانية (جودة فائقة)
-        });
-
-        mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) recordedChunks.push(e.data); };
-        mediaRecorder.onstop = () => {
-            const blob = new Blob(recordedChunks, { type: 'video/webm' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `AURA_X_SHOT_${Date.now()}.webm`;
-            a.click();
-        };
+        mediaRecorder = new MediaRecorder(video.srcObject, { mimeType: 'video/webm;codecs=vp8', bitsPerSecond: 30000000 });
+        mediaRecorder.ondataavailable = e => { if(e.data.size > 0) recordedChunks.push(e.data); };
+        mediaRecorder.onstop = runAIRender;
+        
         mediaRecorder.start();
+        isRecording = true;
+        document.getElementById('shutter').classList.add('recording');
+        
+        timeLeft = 40;
+        timerDisplay.style.display = 'block';
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            timerDisplay.innerText = `00:${timeLeft < 10 ? '0'+timeLeft : timeLeft}`;
+            if (timeLeft <= 0) stopRecording();
+        }, 1000);
     }
 
     function stopRecording() {
+        clearInterval(timerInterval);
         mediaRecorder.stop();
+        isRecording = false;
+        document.getElementById('shutter').classList.remove('recording');
+        timerDisplay.style.display = 'none';
+    }
+
+    async function runAIRender() {
+        aiEngine.style.display = 'flex';
+        const blob = new Blob(recordedChunks, { type: 'video/webm' });
+        const url = URL.createObjectURL(blob);
+        
+        const tempVideo = document.createElement('video');
+        tempVideo.src = url;
+        tempVideo.muted = true;
+        await tempVideo.play();
+
+        canvas.width = 1080; // TikTok Ratio
+        canvas.height = 1920; 
+
+        const captureStream = canvas.captureStream(30); 
+        const finalRecorder = new MediaRecorder(captureStream, { 
+            mimeType: 'video/webm;codecs=vp9', 
+            bitsPerSecond: 40000000 // 40Mbps (Extreme Quality)
+        });
+        
+        const finalChunks = [];
+        finalRecorder.ondataavailable = e => finalChunks.push(e.data);
+        finalRecorder.onstop = () => {
+            const finalBlob = new Blob(finalChunks, { type: 'video/webm' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(finalBlob);
+            a.download = `AURA_NOIR_AI_${Date.now()}.webm`;
+            a.click();
+            location.reload();
+        };
+
+        finalRecorder.start();
+
+        const duration = tempVideo.duration;
+        let currentTime = 0;
+        const fps = 30;
+
+        async function processFrame() {
+            if (currentTime >= duration) {
+                finalRecorder.stop();
+                return;
+            }
+
+            tempVideo.currentTime = currentTime;
+            await new Promise(r => tempVideo.onseeked = r);
+
+            // 1. تطبيق فلتر AI Noir (الحدة الفائقة والتباين السينمائي)
+            ctx.filter = 'url(#ai-sharpen) contrast(1.5) brightness(0.9)';
+            ctx.drawImage(tempVideo, 0, 0, canvas.width, canvas.height);
+            
+            // 2. تطبيق تأثير Silk Glow (توهج البشرة الاحترافي)
+            ctx.globalAlpha = 0.35;
+            ctx.globalCompositeOperation = "screen";
+            ctx.filter = "blur(15px) brightness(1.3)";
+            ctx.drawImage(canvas, 0, 0);
+            
+            // 3. إعادة الدمج وإضافة قناع السينما
+            ctx.globalAlpha = 1.0;
+            ctx.globalCompositeOperation = "source-over";
+            ctx.fillStyle = "black";
+            ctx.fillRect(0, 0, canvas.width, 220); // Top Mask
+            ctx.fillRect(0, canvas.height - 220, canvas.width, 220); // Bottom Mask
+
+            // 4. إضافة Film Grain ناعم جداً لكسر "برودة" الكاميرا الرقمية
+            ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.04})`;
+            ctx.fillRect(0,0,canvas.width,canvas.height);
+
+            currentTime += (1/fps);
+            let progress = Math.floor((currentTime / duration) * 100);
+            pBar.style.width = progress + "%";
+            pText.innerText = progress + "%";
+
+            requestAnimationFrame(processFrame);
+        }
+
+        processFrame();
     }
 </script>
 </body>
